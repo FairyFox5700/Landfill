@@ -28,7 +28,7 @@ namespace Lanfill.BAL.Implementation.Extensions
             ODataNamedValueDictionary< TranslationDTO> dictionary = new ODataNamedValueDictionary<TranslationDTO>();
             foreach (var translation in contentTranslations)
             {
-                dictionary.Add(translation.Language.ToString(), new TranslationDTO() { ContentText = translation.Text });
+                dictionary.Add(translation.Language.ToString(), new TranslationDTO() {Id= translation.Id, ContentText = translation.Text });
             }
             return dictionary;
         }

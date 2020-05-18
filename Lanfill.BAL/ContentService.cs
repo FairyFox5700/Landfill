@@ -86,11 +86,9 @@ namespace Lanfill.BAL
             var requestTuple = GetContentAndRelatedListOfTransactionById(contentId);
             return new ContentDto
             {
-                //ContentId = contentId,
-                //State = requestTuple.Item1.State,
                 Content = GetContentAsync(contentType, contentId),
-                Translations =
-                requestTuple.Item2.ConvertToDictTranslations()
+               // Translations =
+                //requestTuple.Item2.ConvertToDictTranslations()
 
             };
 

@@ -9,10 +9,10 @@ namespace Landfill.Models
 {
     public class FaqModel
     {
-        //public int Id { get; set; }
         public int ContentId { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public State State { get; set; }
         public string MainTag { get; set; }
     }
+    //public int Id { get; set; }
 }

@@ -46,12 +46,12 @@ namespace Landfill.Web.Controllers
         [HttpGet]
         [EnableQuery()]
        // [ODataRoute("Contents")]
-        public IQueryable<ContentDto> Get()//int contentId, ContentType contentType
+        public ActionResult<IQueryable<ContentDto>> Get()//int contentId, ContentType contentType
         {
            // var settings = new JsonSerializerSettings { Converters = new JsonConverter[] { new DictionaryWithSpecialEnumKeyConverter<Language>() } };
             var data = contentService.GetAllContent();
             //var jsonString = JsonConvert.SerializeObject(data, settings);
-            return data;
+            return Ok(data);
         }
 
 

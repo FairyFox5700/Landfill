@@ -2,11 +2,13 @@
 using Landfill.Models;
 using Lanfill.BAL;
 using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using static Landfill.Common.Enums.EnumsContainer;
 
@@ -33,24 +35,39 @@ namespace Landfill.Web.Controllers
         //    //return await landfillContext.Contents.ToListAsync();
         //    return Ok(list);
         //}
+        //string -> Odata -(DTO -> to tables> -?  Dictionary<TTable,IQueryAble<TTable>> Iqueryable<Content> -> 
+        //стрінг конвертується в Iqueryable<Content>
+        //в механізм IQuerayable для OData 
+        //Взять метод мапера і перетоврити моделі на аентівті і виконати запити вже по них
 
-        [HttpGet]
-        [Route("contentModel")]
-        public ActionResult GetContentByIdWithTranslation(int contentId, ContentType contentType)
-        {
-            //var settings = new JsonSerializerSettings { Converters = new JsonConverter[] { new DictionaryWithSpecialEnumKeyConverter<Language>() } };
-            var data = contentService.GetContentByIdWithTranslation(contentId, contentType);
-            //var jsonString = JsonConvert.SerializeObject(data, settings);
-            return Ok(data);
-        }
+        //Робочий метод
+        //[HttpGet]
+        //[Route("contentModel")]
+        //public ActionResult GetContentByIdWithTranslation(int contentId, ContentType contentType)
+        //{
+        //    var data = contentService.GetContentByIdWithTranslation(contentId, contentType);
+        //    return Ok(data);
+        //}
+
+
         [HttpGet]
         [EnableQuery()]
        // [ODataRoute("Contents")]
-        public ActionResult<IQueryable<ContentDto>> Get()//int contentId, ContentType contentType
-        {
-           // var settings = new JsonSerializerSettings { Converters = new JsonConverter[] { new DictionaryWithSpecialEnumKeyConverter<Language>() } };
+        public ActionResult<IQueryable<ContentDto>> Get(ODataQueryOptions<ContentDto> options)
+        { // This is the trick to get the expression out of the FilterQueryOption...
+            //IQueryable queryable = Enumerable.Empty<ContentDto>().AsQueryable();
+            var queryable = options.Filter;
+            //var kkk = options.OrderBy.ApplyTo()
+            //var exp = (MethodCallExpression)queryable.Expression;              // <-- This comes back as a MethodCallExpression...
+
+            //// Map the expression to my intermediate Product object type
+            //var mappedExp = mapper.Map<Expression<Func<Product, bool>>>(exp);   // <-- But I want it as a Expression<Func<ProductDTO, bool>> so I can map it...
+
+            //IEnumerable<Product> results = _dataAccessLayer.GetProducts(mappedExp);
+
+            //return mapper.Map<IEnumerable<ProductDTO>>(results);
+
             var data = contentService.GetAllContent();
-            //var jsonString = JsonConvert.SerializeObject(data, settings);
             return Ok(data);
         }
 

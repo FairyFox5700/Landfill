@@ -19,9 +19,13 @@ namespace Landfill.Models
     public class ContentDto
     {
         public int Id { get; set; }
-        [NotMapped]
+     
         public JObject Content { get; set; }
+        public IDictionary<string, object> Translations { get; set; }
+        //public Dictionary<Language,TranslationDTO> Translations { get; set; }
     }
+
+
     //[JsonProperty, JsonConverter(typeof(DictionaryWithSpecialEnumKeyConverter<Language>))]
        // public IDictionary<string,object> Translations { get; set; }
         //public ODataNamedValueDictionary< TranslationDTO> Translations { get; set; }

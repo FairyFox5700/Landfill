@@ -9,7 +9,6 @@ namespace Lanfill.BAL
     public interface IContentService
     {
         IEnumerable<Content> GetAllConntent();
-        ContentDto GetContentByIdWithTranslation(int contentId, ContentType contentType);
         IQueryable<ContentDto> GetAllContent();
     }
    

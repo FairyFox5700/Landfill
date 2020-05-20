@@ -1,7 +1,8 @@
 using Landfill.DAL.Implementation.Core;
+using Landfill.Entities;
 using Landfill.Models;
 using Lanfill.BAL;
-using Microsoft.AspNet.OData;
+using Lanfill.BAL.Implementation.Mapping;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Formatter.Serialization;
@@ -23,7 +24,7 @@ using static Landfill.Web.Controllers.ContentController;
 
 namespace Landfill.Web
 {
-    public class Startup
+    public partial class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -36,6 +37,7 @@ namespace Landfill.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<LandfillContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddTransient<IMappingModel, MappingModel>();
             services.AddMvc(options =>
             {
                 options.EnableEndpointRouting = false;
@@ -45,18 +47,14 @@ namespace Landfill.Web
                 // var settings = new JsonSerializerSettings { Converters = new JsonConverter[] { new DictionaryWithSpecialEnumKeyConverter<Language>() } };
                 // Use the default property (Pascal) casing
                 //options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-
                 // Configure a custom converter
                 options.SerializerSettings.Converters.Add(new DictionaryWithSpecialEnumKeyConverter<Language>());
             });
             services.AddTransient<IContentService, ContentService>();
-
-
             services.AddOData();
-            //services.AddSingleton<IODataModelManger, ODataModelManager>(DefineEdmModel);
 
         }
-        private Microsoft.OData.Edm.IEdmModel DefineEdmModel(IServiceProvider services)
+        private IEdmModel DefineEdmModel(IServiceProvider services)
         {
             var modelManager = new EdmModel();
             var builder = new ODataConventionModelBuilder();
@@ -66,7 +64,6 @@ namespace Landfill.Web
             return modelManager;
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -81,16 +78,7 @@ namespace Landfill.Web
 
             app.UseMvc(routeBuilder =>
             {
-                //routeBuilder.EnableDependencyInjection();
                 routeBuilder.Expand().Select().OrderBy().Filter().Count().MaxTop(10);
-                // routeBuilder.MapODataServiceRoute("odata", "odata", GetEdmModel());//api/api
-                // routeBuilder.MapODataServiceRoute("odata", "odata", GetEdmModel());
-                //routeBuilder.MapODataServiceRoute("odata", "odata", a =>
-                //{
-                //    a.AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(IEdmModel), sp => GetEdmModel());
-                //    a.AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(ODataSerializerProvider), sp => new DefaultODataDeserializerProvider(sp));
-
-                //});
                 routeBuilder.MapODataServiceRoute("odata", "odata", containerBuilder =>
                 {
                     containerBuilder.AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(IEdmModel), sp => GetEdmModel())
@@ -104,19 +92,22 @@ namespace Landfill.Web
 
         public class CustomODataSerializerProvider : DefaultODataSerializerProvider
         {
-            private MySerializer _annotatingEntitySerializer;
+            private ContentSerializer contentSerializer;
+           
 
             public CustomODataSerializerProvider(IServiceProvider serviceProvider) : base(serviceProvider)
             {
-                _annotatingEntitySerializer = new MySerializer(this);
+                contentSerializer = new ContentSerializer(this);
             }
 
             public override ODataEdmTypeSerializer GetEdmTypeSerializer(IEdmTypeReference edmType)
             {
-                if (edmType.IsEntity())
+                var types = edmType.FullName();
+                if (edmType.FullName() == typeof(JToken).FullName)//"Collection(Newtonsoft.Json.Linq.JToken)"// typeof(JToken).FullName
                 {
-                    return _annotatingEntitySerializer;
+                    return contentSerializer;//Newtonsoft.Json.Linq.JToken
                 }
+                var isAsm = (edmType.FullName() == typeof(Dictionary<Language, TranslationDTO>).FullName);
                 return base.GetEdmTypeSerializer(edmType);
             }
         }
@@ -127,75 +118,25 @@ namespace Landfill.Web
         {
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<ContentDto>("Content");
+            builder.EntitySet<TranslationDTO>("Translation");
             return builder.GetEdmModel();
         }
 
-        //    private IEdmModel GetEdmModel()
-        //{
-        //    EdmModel model = new EdmModel();
-        //    EdmEnumType languages = new EdmEnumType("Landfill.Common.Enums", "Language");
-        //    languages.AddMember(new EdmEnumMember(languages, "UA", new EdmEnumMemberValue(0)));
-        //    languages.AddMember(new EdmEnumMember(languages, "EN", new EdmEnumMemberValue(1)));
-
-        //    var builder = new ODataConventionModelBuilder();
-        //    //builder.AddComplexType(typeof(ODataNamedValueDictionary<TranslationDTO>));
-        //    //uilder.AddEnumType(languages);
-        //    builder.EntitySet<ContentDto>("Content").EntityType.Name = "Content";
-        //    //builder.EntitySet<TranslationDTO>("Translation").EntityType.Name = "Transalation";
+      
 
 
-        //    //builder.EntityType<ContentDto>();
-        //    return builder.GetEdmModel();
-        //}
-        //enum
+        
 
 
 
-        internal sealed class MySerializerProvider : DefaultODataSerializerProvider
+        private ODataResource BarToResource(JObject jobject)
         {
-            private MySerializer _mySerializer;
-
-            public MySerializerProvider(IServiceProvider sp) : base(sp)
+            var model = TryConvertModel<FaqModel>(jobject);
+            if (model != null)
             {
-                _mySerializer = new MySerializer(this);
-            }
-
-            public override ODataEdmTypeSerializer GetEdmTypeSerializer(IEdmTypeReference edmType)
-            {
-                var fullName = edmType.FullName();
-
-                if (fullName == "Namespace.Bar")
-                    return _mySerializer;
-                else
-                    return base.GetEdmTypeSerializer(edmType);
-            }
-        }
-
-
-        internal sealed class MySerializer : ODataResourceSerializer
-        {
-            public MySerializer(ODataSerializerProvider sp) : base(sp) { }
-
-
-            public override ODataResource CreateResource(SelectExpandNode selectExpandNode, ResourceContext resourceContext)
-            {
-                var resource = base.CreateResource(selectExpandNode, resourceContext);
-                var res = resourceContext.ResourceInstance as ContentDto;
-
-                if (resource != null && res.Content != null)
-                    resource = BarToResource(res.Content);
-
-                return resource;
-            }
-
-            private ODataResource BarToResource(JObject jobject)
-            {
-                var model = TryConvertModel<FaqModel>(jobject);
-                if ( model != null)
+                var odr = new ODataResource
                 {
-                    var odr = new ODataResource
-                    {
-                        Properties = new List<ODataProperty>
+                    Properties = new List<ODataProperty>
                 {
                     new ODataProperty
                     {
@@ -214,16 +155,16 @@ namespace Landfill.Web
                     },
 
                 }
-                    };
+                };
 
-                    return odr;
-                }
-                var modelAnnouncement = TryConvertModel<AnnouncementModel>(jobject);//"REFACTORING
-                if ( modelAnnouncement!=null)
+                return odr;
+            }
+            var modelAnnouncement = TryConvertModel<AnnouncementModel>(jobject);//"REFACTORING
+            if (modelAnnouncement != null)
+            {
+                var odr = new ODataResource
                 {
-                    var odr = new ODataResource
-                    {
-                        Properties = new List<ODataProperty>
+                    Properties = new List<ODataProperty>
                 {
                     new ODataProperty
                     {
@@ -243,38 +184,59 @@ namespace Landfill.Web
 
                 }
 
-                    };
-                    return odr;
-                }
-                else
-                    return new ODataResource();
-
+                };
+                return odr;
             }
+            else
+                return new ODataResource();
 
-            private TContent TryConvertModel<TContent>(JObject content) where TContent : class//where TConcent:IContent
-            {
-                if (content == null)
-                    throw new ArgumentNullException();
-                try
-                {
-                    var validatedModel = content.ToObject<TContent>();
-                    if (validatedModel == null)
-                        return null;
-                    return validatedModel;
-                }
-                catch (Exception ex)
-                {
-                    //logger.LogError("JObject not parced properly", ex.Message);
-                    return default(TContent);
-                }
-
-            }
         }
 
+        private TContent TryConvertModel<TContent>(JObject content) where TContent : class//where TConcent:IContent
+        {
+            if (content == null)
+                throw new ArgumentNullException();
+            try
+            {
+                var validatedModel = content.ToObject<TContent>();
+                if (validatedModel == null)
+                    return null;
+                return validatedModel;
+            }
+            catch (Exception ex)
+            {
+                //logger.LogError("JObject not parced properly", ex.Message);
+                return default(TContent);
+            }
 
-
+        }
     }
+
 }
+
+
+
+//    private IEdmModel GetEdmModel()
+//{
+//    EdmModel model = new EdmModel();
+//    EdmEnumType languages = new EdmEnumType("Landfill.Common.Enums", "Language");
+//    languages.AddMember(new EdmEnumMember(languages, "UA", new EdmEnumMemberValue(0)));
+//    languages.AddMember(new EdmEnumMember(languages, "EN", new EdmEnumMemberValue(1)));
+
+//    var builder = new ODataConventionModelBuilder();
+//    //builder.AddComplexType(typeof(ODataNamedValueDictionary<TranslationDTO>));
+//    //uilder.AddEnumType(languages);
+//    builder.EntitySet<ContentDto>("Content").EntityType.Name = "Content";
+//    //builder.EntitySet<TranslationDTO>("Translation").EntityType.Name = "Transalation";
+
+
+//    //builder.EntityType<ContentDto>();
+//    return builder.GetEdmModel();
+//}
+//enum
+
+
+
 
 
 /*                var model = resourceContext.EdmModel;

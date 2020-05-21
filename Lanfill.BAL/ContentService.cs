@@ -4,26 +4,19 @@ using Landfill.Entities;
 using Landfill.Models;
 using LandFill.DAL.Abstract;
 using Lanfill.BAL.Implementation;
-using Lanfill.BAL.Implementation.Extensions;
 using Lanfill.BAL.Implementation.Mapping;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
-using System.Web.Http.OData.Query;
-using static Landfill.Common.Enums.EnumsContainer;
+
 
 namespace Lanfill.BAL
 {
-    public class ContentService: IContentService
+    public class ContentService : IContentService
     {
         //public ContentDTO GetContentModel(int contentId, ContentType contentType)
         //{
@@ -34,7 +27,7 @@ namespace Lanfill.BAL
         private readonly ILogger<ContentService> logger;
         private readonly IContentRepository contentRepository;
 
-        public ContentService(LandfillContext context, IMappingModel mappingModel,ILogger<ContentService> logger, IContentRepository contentRepository)
+        public ContentService(LandfillContext context, IMappingModel mappingModel, ILogger<ContentService> logger, IContentRepository contentRepository)
         {
             this.context = context;
             this.mappingModel = mappingModel;
@@ -45,35 +38,37 @@ namespace Lanfill.BAL
         {
             return context.Contents;
         }
- 
-        public IEnumerable<ContentDto> GetAllContent(ODataQueryOptions<ContentDto> options)
+
+        public IQueryable<ContentDto> GetAllContent(ODataQueryOptions<ContentDto> options)
         {
             var filter = options.GetFilter();
-           //&& athor propety
-            var mappedProperty = new MappedProperties<ContentDto, Content>() {};//DtoProperty and EntityProperty
-            var expressionVistor = new BaseExpressionConverter<ContentDto, Content>(
-                new MappingContainer<ContentDto, Content> { 
-            Mappings = new List<MappedProperties<ContentDto, Content>> {  }
-            });
-            var mappedExpression = expressionVistor.Visit(filter);
-            //mapTo
-            // Map the expression to my intermediate Product object type
-            //ar mappedExp = mapper.Map<Expression<Func<Product, bool>>>(exp);   // <-- But I want it as a Expression<Func<ProductDTO, bool>> so I can map it...
-            //IEnumerable<Content> results = contentRepository.GetContent(filter);
-            //var result = mappingModel.MapToContentDTO(results);
-            ///return result;
-            throw new NotImplementedException();
-           
-        }
-    
 
-    public IQueryable<ContentDto> GetAllContent()
+            var map = new ExpressionMap()
+                .Add<ContentDto, Content>()
+                .Add((ContentDto c) => c.Id, (Content c) => c.Id)
+                .Add<FaqModel, FAQ>();
+            var mappedPredicate = ((Expression<Func<Content, bool>>)map.Map(filter));
+            //var mappedProperty = new MappedProperties<ContentDto, Content>() {};//DtoProperty and EntityProperty
+            //var expressionVistor = new BaseExpressionConverter<ContentDto, Content>(
+            //    new MappingContainer<ContentDto, Content> { 
+            //Mappings = new List<MappedProperties<ContentDto, Content>> {  }
+            //});
+            //var mappedExpression = expressionVistor.Visit(filter);
+
+            IEnumerable<Content> results = contentRepository.GetContent(mappedPredicate);
+            var result = mappingModel.MapToContentDTO(results.AsQueryable());//convert to enumerable//TODO
+            return result;
+        }
+
+
+        public IQueryable<ContentDto> GetAllContent()
         {
             var list = context.Contents;
             var result = mappingModel.MapToContentDTO(list);
             return result;
         }
-       
+
+
     }
 
 }

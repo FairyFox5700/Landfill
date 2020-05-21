@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LandFill.DAL.Abstract\LandFill.DAL.Abstract.csproj" />
     <ProjectReference Include="..\Landfill.Entities\Landfill.Entities.csproj" />
   </ItemGroup>
 

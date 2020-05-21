@@ -1,17 +1,10 @@
 ﻿using Landfill.BAL.Abstract;
-using Landfill.Entities;
 using Landfill.Models;
-using Lanfill.BAL;
 using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Query;
-using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using static Landfill.Common.Enums.EnumsContainer;
+using Microsoft.AspNet.OData.Query;
+
 
 namespace Landfill.Web.Controllers
 {
@@ -53,11 +46,12 @@ namespace Landfill.Web.Controllers
 
         [HttpGet]
         [EnableQuery()]
-       // [ODataRoute("Contents")]
+        // [ODataRoute("Contents")]
+        
         public ActionResult<IQueryable<ContentDto>> Get(ODataQueryOptions<ContentDto> options)
         { // This is the trick to get the expression out of the FilterQueryOption...
             //IQueryable queryable = Enumerable.Empty<ContentDto>().AsQueryable();
-            var queryable = options.OrderBy;
+            var queryable = options.Filter;
             //var kkk = options.OrderBy.ApplyTo()
             //var exp = (MethodCallExpression)queryable.Expression;              // <-- This comes back as a MethodCallExpression...
 
@@ -68,7 +62,7 @@ namespace Landfill.Web.Controllers
 
             //return mapper.Map<IEnumerable<ProductDTO>>(results);
 
-            var data = contentService.GetAllContent();
+            var data = contentService.GetAllContent(options);
             return Ok(data);
         }
 
@@ -212,7 +206,7 @@ namespace Landfill.Web.Controllers
         //        }
         //    }
     }
-    }
+}
 
 
 

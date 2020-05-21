@@ -1,6 +1,5 @@
 using Landfill.BAL.Abstract;
 using Landfill.DAL.Implementation.Core;
-using Landfill.Entities;
 using Landfill.Models;
 using Lanfill.BAL;
 using Lanfill.BAL.Implementation.Mapping;
@@ -16,16 +15,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LandFill.DAL.Abstract;
+using Landfill.DAL.Implementation.Repositories;
+using Lanfill.BAL.Implementation.Serialization;
 using static Landfill.Common.Enums.EnumsContainer;
 using static Landfill.Web.Controllers.ContentController;
 
 namespace Landfill.Web
 {
-    public partial class Startup
+    public class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -45,13 +46,10 @@ namespace Landfill.Web
 
             }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0).AddNewtonsoftJson(options =>
             {
-                // var settings = new JsonSerializerSettings { Converters = new JsonConverter[] { new DictionaryWithSpecialEnumKeyConverter<Language>() } };
-                // Use the default property (Pascal) casing
-                //options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                // Configure a custom converter
                 options.SerializerSettings.Converters.Add(new DictionaryWithSpecialEnumKeyConverter<Language>());
             });
             services.AddTransient<IContentService, ContentService>();
+            services.AddTransient<IContentRepository, ContentRepository>();
             services.AddOData();
 
         }
@@ -91,27 +89,6 @@ namespace Landfill.Web
             });
         }
 
-        public class CustomODataSerializerProvider : DefaultODataSerializerProvider
-        {
-            private ContentSerializer contentSerializer;
-           
-
-            public CustomODataSerializerProvider(IServiceProvider serviceProvider) : base(serviceProvider)
-            {
-                contentSerializer = new ContentSerializer(this);
-            }
-
-            public override ODataEdmTypeSerializer GetEdmTypeSerializer(IEdmTypeReference edmType)
-            {
-                var types = edmType.FullName();
-                if (edmType.FullName() == typeof(JToken).FullName)//"Collection(Newtonsoft.Json.Linq.JToken)"// typeof(JToken).FullName
-                {
-                    return contentSerializer;//Newtonsoft.Json.Linq.JToken
-                }
-                var isAsm = (edmType.FullName() == typeof(Dictionary<Language, TranslationDTO>).FullName);
-                return base.GetEdmTypeSerializer(edmType);
-            }
-        }
 
 
 
@@ -123,14 +100,14 @@ namespace Landfill.Web
             return builder.GetEdmModel();
         }
 
-      
-
-
-        
 
 
 
-       
+
+
+
+
+
     }
 
 }

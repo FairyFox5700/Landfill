@@ -1,4 +1,5 @@
-﻿using Landfill.Entities;
+﻿using Landfill.BAL.Abstract;
+using Landfill.Entities;
 using Landfill.Models;
 using Lanfill.BAL;
 using Microsoft.AspNet.OData;
@@ -56,7 +57,7 @@ namespace Landfill.Web.Controllers
         public ActionResult<IQueryable<ContentDto>> Get(ODataQueryOptions<ContentDto> options)
         { // This is the trick to get the expression out of the FilterQueryOption...
             //IQueryable queryable = Enumerable.Empty<ContentDto>().AsQueryable();
-            var queryable = options.Filter;
+            var queryable = options.OrderBy;
             //var kkk = options.OrderBy.ApplyTo()
             //var exp = (MethodCallExpression)queryable.Expression;              // <-- This comes back as a MethodCallExpression...
 

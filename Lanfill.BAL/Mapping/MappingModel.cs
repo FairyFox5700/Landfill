@@ -17,6 +17,7 @@ namespace Lanfill.BAL.Implementation.Mapping
     public interface IMappingModel
     {
         public ContentDto MapToContentDTO(Content contentEntity);
+        public Content MapToContent(ContentDto contentDto);
         public IQueryable<ContentDto> MapToContentDTO(IQueryable<Content> contents);
         public IQueryable<ContentDto> MapToContentDTO(IQueryable<Content> contents, QueryFilterSet filters);
 
@@ -97,7 +98,6 @@ namespace Lanfill.BAL.Implementation.Mapping
         private FaqModel GetFaq(int contentId, ContentType contentType)
         {
             var model = (from content in context.Contents
-                             //join translation in context.ContentTranslations on content.Id equals translation.ContentId
                          join faq in context.FAQs on content.Id equals faq.ContentId
                          where content.ContentType == ContentType.FAQ
                          && content.Id == contentId
@@ -114,7 +114,6 @@ namespace Lanfill.BAL.Implementation.Mapping
         private AnnouncementModel GetAnnouncement(int contentId, ContentType contentType)
         {
             var model = (from content in context.Contents
-                             // join translation in context.ContentTranslations on content.Id equals translation.ContentId
                          join announcement in context.Announcements on content.Id equals announcement.ContentId
                          where content.ContentType == ContentType.Announcement
                          && content.Id == contentId
@@ -132,6 +131,51 @@ namespace Lanfill.BAL.Implementation.Mapping
         public IQueryable<ContentDto> MapToContentDTO(IQueryable<Content> contents, QueryFilterSet filters)
         {
             throw new NotImplementedException();
+        }
+        //MapBack
+        public Content MapToContent(ContentDto contentDto)
+        {
+            var content = new Content();
+           
+        }
+
+        /// <summary>
+        /// Method to parse JObject
+        /// </summary>
+        /// <param name="jObject"></param>
+        public dynamic GetModel(string jObject)
+        {
+            var responceJObject = JObject.Parse(jObject);
+            dynamic model = null;
+            if (responceJObject["ContentType"].ToString()== ContentType.Announcement.ToString())
+            {
+                model = TryConvertModel<AnnouncementModel>(responceJObject);
+            }
+            else
+            {
+                model = TryConvertModel<FaqModel>(responceJObject);
+            }
+            return model;
+
+        }
+
+        private TContent TryConvertModel<TContent>(JObject content) where TContent : class//where TConcent:IContent
+        {
+            if (content == null)
+                throw new ArgumentNullException();
+            try
+            {
+                var validatedModel = content.ToObject<TContent>();
+                if (validatedModel == null)
+                    return null;
+                return validatedModel;
+            }
+            catch (Exception ex)
+            {
+                //logger.LogError("JObject not parced properly", ex.Message);
+                return default(TContent);
+            }
+
         }
     }
 

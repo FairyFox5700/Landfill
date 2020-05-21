@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -22,6 +23,38 @@ namespace Landfill.Models
      
         public JObject Content { get; set; }
         public IDictionary<string, object> Translations { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+
+        public static Expression<Func<ContentDto, Content>> ConvertToFaqModel
+        {
+            get
+            {
+                return x => new Content()
+                {
+                    Id = x.Id,
+                    Faq = new FAQ(),
+                    ContentType = ContentType.FAQ,
+                    Translations = new List<ContentTranslation>(),
+                    State = x.State
+                };
+            }
+        }
+
+        public static Expression<Func<ContentDto, Content>> ConvertToAnnouncementModel
+        {
+            get
+            {
+                return x => new Content()
+                {
+                    Id = x.Id,
+                    ContentType = ContentType.Announcement,
+                    Announcement = new Announcement(),
+                    Translations = new List<ContentTranslation>()
+                };
+            }
+        }
         //public Dictionary<Language,TranslationDTO> Translations { get; set; }
     }
 

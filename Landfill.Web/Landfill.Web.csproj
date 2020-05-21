@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Landfill.BAL.Abstract\Landfill.BAL.Abstract.csproj" />
     <ProjectReference Include="..\Landfill.DAL\Landfill.DAL.Implementation.csproj" />
     <ProjectReference Include="..\Landfill.Entities\Landfill.Entities.csproj" />
     <ProjectReference Include="..\Lanfill.BAL\Lanfill.BAL.Implementation.csproj" />

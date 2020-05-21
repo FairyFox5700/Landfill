@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Landfill.Entities\Landfill.Entities.csproj" />
+    <ProjectReference Include="..\Landfill.Models\Landfill.Models.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static Landfill.Common.Enums.EnumsContainer;
 
-namespace Lanfill.BAL
+namespace Landfill.BAL.Abstract
 {
     public interface IContentService
     {

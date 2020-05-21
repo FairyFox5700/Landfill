@@ -23,25 +23,7 @@ namespace Lanfill.BAL.Implementation.Extensions
             return dictionary;
         }
         //TODo cast or more
-        public static ODataNamedValueDictionary<TranslationDTO> ConvertToOdataDictTranslations(this IEnumerable<ContentTranslation> contentTranslations)
-        {
-            ODataNamedValueDictionary< TranslationDTO> dictionary = new ODataNamedValueDictionary<TranslationDTO>();
-            foreach (var translation in contentTranslations)
-            {
-                dictionary.Add(translation.Language.ToString(), new TranslationDTO() {Id= translation.Id, ContentText = translation.Text });
-            }
-            return dictionary;
-        }
-
-        public static ODataNamedValueDictionary< TranslationDTO> ConvertToOdataDictTranslations(this Dictionary<Language, TranslationDTO> contentTranslations)
-        {
-            ODataNamedValueDictionary< TranslationDTO> dictionary = new ODataNamedValueDictionary<TranslationDTO>();
-            foreach (var translation in contentTranslations)
-            {
-                dictionary.Add(translation.Key.ToString(), translation.Value );
-            }
-            return dictionary;
-        }
+        
 
         public static IDictionary<string, object>ConvertToDictTranslations(this Dictionary<Language, TranslationDTO> contentTranslations)
         {
@@ -53,7 +35,10 @@ namespace Lanfill.BAL.Implementation.Extensions
             return dictionary;
         }
 
+       
 
-      
+        
+
+
     }
 }

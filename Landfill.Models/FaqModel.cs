@@ -30,6 +30,11 @@ namespace Landfill.Models
                 };
             }
         }
+
+        public static FAQ FromFaqModel(FaqModel model)
+        {
+            return ConvertToFaqEntity.Compile().Invoke(model);
+        }
     }
     //public int Id { get; set; }
 }

@@ -59,9 +59,10 @@ namespace Lanfill.BAL
             //mapTo
             // Map the expression to my intermediate Product object type
             //ar mappedExp = mapper.Map<Expression<Func<Product, bool>>>(exp);   // <-- But I want it as a Expression<Func<ProductDTO, bool>> so I can map it...
-            IEnumerable<Content> results = contentRepository.GetContent(filter);
-            var result = mappingModel.MapToContentDTO(results);
-            return result;
+            //IEnumerable<Content> results = contentRepository.GetContent(filter);
+            //var result = mappingModel.MapToContentDTO(results);
+            ///return result;
+            throw new NotImplementedException();
            
         }
     

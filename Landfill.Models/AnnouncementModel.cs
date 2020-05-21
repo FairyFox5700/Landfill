@@ -31,5 +31,10 @@ namespace Landfill.Models
                 };
             }
         }
+
+        public static Announcement FromAnnouncementModel(AnnouncementModel model)
+        {
+            return ConvertToAnnouncementEntity.Compile().Invoke(model);
+        }
     }
 }

@@ -7,6 +7,8 @@ namespace Landfill.Entities
         public string Tag { get; set; }
         public int ContentId { get; set; }
         public Content Content { get; set; }
+
+
     }
 }
 //[ForeignKey("FK_FAQ_Content")]

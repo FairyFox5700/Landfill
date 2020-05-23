@@ -28,6 +28,7 @@ namespace Lanfill.BAL.Implementation.Mapping
         {
             var model = GetContentByIdWithTranslation(contentEntity.Id, contentEntity.ContentType);
             model.State = contentEntity.State;
+            model.Id = contentEntity.Id;
             return model;
         }
         public IQueryable<ContentDto> MapToContentDTO(IQueryable<Content> contents)

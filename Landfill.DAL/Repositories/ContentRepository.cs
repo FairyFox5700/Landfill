@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace Landfill.DAL.Implementation.Repositories
 {
-    public class ContentRepository:IContentRepository
+    public class ContentRepository : IContentRepository
     {
         private readonly LandfillContext landfillContext;
 
@@ -17,13 +16,23 @@ namespace Landfill.DAL.Implementation.Repositories
         {
             this.landfillContext = landfillContext;
         }
-  
+
         public IEnumerable<Content> GetContent(Expression<Func<Content, bool>> expression)
         {
-           // return Colours.Where(mappedPredicate.Compile()).Select(c => new DomainColour(c.Name)).ToList();
             return landfillContext.Contents.Where(expression).AsEnumerable<Content>();
-          
+
+
         }
+        public IEnumerable<Content> GetContent<TKey>(Expression<Func<Content, TKey>> expression)
+        {
+            return landfillContext.Contents.OrderBy(expression).AsEnumerable<Content>();
+        }
+
+        public IEnumerable<Content> GetContent(int pageSize, int pageIndex)
+        {
+            return landfillContext.Contents.Skip(pageSize *(pageIndex- 1)).Take(pageSize);
+        }
+
 
 
     }

@@ -12,6 +12,7 @@ namespace Landfill.BAL.Abstract
         IEnumerable<Content> GetAllConntent();
         IQueryable<ContentDto> GetAllContent();
         IQueryable<ContentDto> GetAllContent(ODataQueryOptions<ContentDto> options);
+        IQueryable<ContentDto> GetAllContent(TopQueryOption topOptions, SkipQueryOption skipOptions);
     }
    
 }

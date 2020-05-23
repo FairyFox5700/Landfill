@@ -22,7 +22,7 @@ namespace Lanfill.BAL.Implementation.Serialization
         public override ODataEdmTypeSerializer GetEdmTypeSerializer(IEdmTypeReference edmType)
         {
             var types = edmType.FullName();
-            if (edmType.FullName() == typeof(JToken).FullName)//"Collection(Newtonsoft.Json.Linq.JToken)"// typeof(JToken).FullName
+            if (edmType.FullName() == typeof(ContentDto).FullName)//"Collection(Newtonsoft.Json.Linq.JToken)"// typeof(JToken).FullName
             {
                 return contentSerializer;//Newtonsoft.Json.Linq.JToken
             }

@@ -1,10 +1,11 @@
 ﻿using Landfill.BAL.Abstract;
 using Landfill.Models;
 using Microsoft.AspNet.OData;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using Microsoft.AspNet.OData.Query;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OData;
+using System.Linq;
 
 namespace Landfill.Web.Controllers
 {
@@ -19,51 +20,28 @@ namespace Landfill.Web.Controllers
         {
             this.contentService = contentService;
         }
-        // GET: api/Content
-
-        //[HttpGet]
-        //[EnableQuery()]
-        //public ActionResult<IEnumerable<Content>> Get()
-        //{
-        //    var list = contentService.GetAllConntent();
-        //    //return await landfillContext.Contents.ToListAsync();
-        //    return Ok(list);
-        //}
-        //string -> Odata -(DTO -> to tables> -?  Dictionary<TTable,IQueryAble<TTable>> Iqueryable<Content> -> 
-        //стрінг конвертується в Iqueryable<Content>
-        //в механізм IQuerayable для OData 
-        //Взять метод мапера і перетоврити моделі на аентівті і виконати запити вже по них
-
-        //Робочий метод
-        //[HttpGet]
-        //[Route("contentModel")]
-        //public ActionResult GetContentByIdWithTranslation(int contentId, ContentType contentType)
-        //{
-        //    var data = contentService.GetContentByIdWithTranslation(contentId, contentType);
-        //    return Ok(data);
-        //}
 
 
         [HttpGet]
         [EnableQuery()]
-        // [ODataRoute("Contents")]
-        
         public ActionResult<IQueryable<ContentDto>> Get(ODataQueryOptions<ContentDto> options)
-        { // This is the trick to get the expression out of the FilterQueryOption...
-            //IQueryable queryable = Enumerable.Empty<ContentDto>().AsQueryable();
-            var queryable = options.Filter;
-            //var kkk = options.OrderBy.ApplyTo()
-            //var exp = (MethodCallExpression)queryable.Expression;              // <-- This comes back as a MethodCallExpression...
+        {
+            try
+            {
+                //var gggg = options.SelectExpand;
+                //var queryable = options.Filter;
+                var topQuery = options.Top;
+                var skipQuery = options.Skip;
+                var data = contentService.GetAllContent(topQuery,skipQuery);
+                return Ok(data);
+            }
 
-            //// Map the expression to my intermediate Product object type
-            //var mappedExp = mapper.Map<Expression<Func<Product, bool>>>(exp);   // <-- But I want it as a Expression<Func<ProductDTO, bool>> so I can map it...
+            catch (ODataException ex)
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(ex.Message);
+            }
 
-            //IEnumerable<Product> results = _dataAccessLayer.GetProducts(mappedExp);
-
-            //return mapper.Map<IEnumerable<ProductDTO>>(results);
-
-            var data = contentService.GetAllContent(options);
-            return Ok(data);
         }
 
 

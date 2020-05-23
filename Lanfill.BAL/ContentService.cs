@@ -18,10 +18,7 @@ namespace Lanfill.BAL
 {
     public class ContentService : IContentService
     {
-        //public ContentDTO GetContentModel(int contentId, ContentType contentType)
-        //{
-        //    return null;
-        //}
+
         private readonly LandfillContext context;
         private readonly IMappingModel mappingModel;
         private readonly ILogger<ContentService> logger;
@@ -39,22 +36,38 @@ namespace Lanfill.BAL
             return context.Contents;
         }
 
+        public IQueryable<ContentDto> GetAllContent(TopQueryOption topOptions, SkipQueryOption skipOptions)
+        {
+            IEnumerable<Content> results = new List<Content>();
+            if(topOptions!=null && skipOptions!=null)
+            {
+                var pageIndex = skipOptions.Value;
+                var pageSize = topOptions.Value;
+                results = contentRepository.GetContent(pageSize, pageIndex);
+            }
+            else
+            {
+                results = contentRepository.GetContent(2, 1);
+            }
+            var result = mappingModel.MapToContentDTO(results.AsQueryable());//convert to enumerable//TODO
+            return result;
+
+        }
         public IQueryable<ContentDto> GetAllContent(ODataQueryOptions<ContentDto> options)
         {
             var filter = options.GetFilter();
-
+            if(options.Top!=null)
+            {
+                var oredrBy = options.Top;
+              
+            }
+           
             var map = new ExpressionMap()
                 .Add<ContentDto, Content>()
                 .Add((ContentDto c) => c.Id, (Content c) => c.Id)
                 .Add<FaqModel, FAQ>();
             var mappedPredicate = ((Expression<Func<Content, bool>>)map.Map(filter));
-            //var mappedProperty = new MappedProperties<ContentDto, Content>() {};//DtoProperty and EntityProperty
-            //var expressionVistor = new BaseExpressionConverter<ContentDto, Content>(
-            //    new MappingContainer<ContentDto, Content> { 
-            //Mappings = new List<MappedProperties<ContentDto, Content>> {  }
-            //});
-            //var mappedExpression = expressionVistor.Visit(filter);
-
+          
             IEnumerable<Content> results = contentRepository.GetContent(mappedPredicate);
             var result = mappingModel.MapToContentDTO(results.AsQueryable());//convert to enumerable//TODO
             return result;

@@ -17,7 +17,7 @@ namespace Lanfill.BAL.Implementation.Extensions
                         .Select(p => new
                         {
                             Key = p.Language,
-                            Value = new TranslationDTO() { ContentText = p.Text }
+                            Value = new TranslationDTO() { ContentText = p.Text ,Id= p.Id}
                         })
                       .ToDictionary(x => x.Key, x => x.Value);
             return dictionary;

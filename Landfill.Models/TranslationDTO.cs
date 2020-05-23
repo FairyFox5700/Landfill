@@ -1,6 +1,8 @@
 ﻿using Landfill.Entities;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
+using System.Text.Json.Serialization;
 
 namespace Landfill.Models
 {

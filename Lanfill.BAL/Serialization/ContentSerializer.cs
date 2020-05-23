@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNet.OData.Formatter.Serialization;
+﻿using Landfill.Models;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Newtonsoft.Json;
@@ -12,15 +14,15 @@ namespace Lanfill.BAL.Implementation.Serialization
     {
         public ContentSerializer(ODataSerializerProvider sp) : base(sp) { }
 
-        //public override ODataResource CreateResource(SelectExpandNode selectExpandNode, ResourceContext resourceContext)
-        //{
-        //    var resource = base.CreateResource(selectExpandNode, resourceContext);
-        //    var res = resourceContext.ResourceInstance as ContentDto;
+        public override ODataResource CreateResource(SelectExpandNode selectExpandNode, ResourceContext resourceContext)
+        {
+            var resource = base.CreateResource(selectExpandNode, resourceContext);
+            var res = resourceContext.ResourceInstance as ContentDto;
 
-        //    if (resource != null && res.Content != null)
-        //        resource=WriteJobjectData(res.Content);
-        //    return resource;
-        //}
+            if (resource != null && res.Content != null)
+                resource = WriteJobjectData(res.Content);
+            return resource;
+        }
 
         private ODataResource WriteJobjectData(JObject content)
         {

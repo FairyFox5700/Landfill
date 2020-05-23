@@ -28,7 +28,7 @@ namespace Landfill.Models
         [JsonConverter(typeof(StringEnumConverter))]
         public State State { get; set; }
 
-        
+        [NotMapped]
         public static Expression<Func<ContentDto, Content>> ConvertToFaqModel
         {
             get
@@ -39,12 +39,12 @@ namespace Landfill.Models
                     Faq = FaqModel.FromFaqModel(GetModel(x.Content,ContentType.FAQ) as FaqModel),//HERE convertion to derivative type
                     ContentType = ContentType.FAQ,
                     Translations = x.Translations.ConvertToListTranslations().ToList(),
-                    State = x.State
+                   // State = x.State
                 };
             }
         }
 
-        
+        [NotMapped]
         public static Expression<Func<ContentDto, Content>> ConvertToAnnouncementModel
         {
             get
@@ -55,21 +55,21 @@ namespace Landfill.Models
                     ContentType = ContentType.Announcement,
                     Announcement =  AnnouncementModel.FromAnnouncementModel(GetModel(x.Content, ContentType.Announcement) as AnnouncementModel),//Jobject
                     Translations = x.Translations.ConvertToListTranslations().ToList(),
-                    State = x.State
+                    //State = x.State
                 };
             }
         }
-
+      
         public static Content ConvertToFaq(ContentDto model)
         {
             return ConvertToFaqModel.Compile().Invoke(model);
         }
-
+       
         public static Content ConvertToAnnouncement(ContentDto model)
         {
             return ConvertToAnnouncementModel.Compile().Invoke(model);
         }
-
+       
         #region move to services
         public static  dynamic GetModel(JObject jObject, ContentType contentType)
         {
@@ -85,7 +85,7 @@ namespace Landfill.Models
             return model;
         }
 
-
+      
         private static TContent TryConvertModel<TContent>(JObject content) where TContent : class//where TConcent:IContent
         {
             if (content == null)

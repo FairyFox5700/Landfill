@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -12,12 +13,15 @@ namespace Landfill.Models
     public class FaqModel
     {
         public int ContentId { get; set; }
-        //[JsonConverter(typeof(StringEnumConverter))]
-        //public ContentType ContentType { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ContentType ContentType { get; set; }
         //[JsonConverter(typeof(StringEnumConverter))]
         //public State State { get; set; }
         public string MainTag { get; set; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+        [NotMapped]
         public static Expression<Func<FaqModel, FAQ>> ConvertToFaqEntity
         {
             get
@@ -36,5 +40,5 @@ namespace Landfill.Models
             return ConvertToFaqEntity.Compile().Invoke(model);
         }
     }
-    //public int Id { get; set; }
+    
 }

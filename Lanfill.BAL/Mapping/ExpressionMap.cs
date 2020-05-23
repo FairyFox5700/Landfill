@@ -46,7 +46,6 @@ namespace Lanfill.BAL.Implementation.Mapping
             {
                 if (node.Object == null && node.Method.IsGenericMethod)
                 {
-                    // Static generic method
                     var arguments = Visit(node.Arguments);
                     var genericArguments = node.Method.GetGenericArguments().Select(Map).ToArray();
                     var method = node.Method.GetGenericMethodDefinition().MakeGenericMethod(genericArguments);

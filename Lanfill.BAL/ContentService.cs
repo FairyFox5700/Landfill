@@ -23,13 +23,16 @@ namespace Lanfill.BAL
         private readonly IMappingModel mappingModel;
         private readonly ILogger<ContentService> logger;
         private readonly IContentRepository contentRepository;
+        private readonly IJObjectConverter jObjectConverter;
 
-        public ContentService(LandfillContext context, IMappingModel mappingModel, ILogger<ContentService> logger, IContentRepository contentRepository)
+        public ContentService(LandfillContext context, IMappingModel mappingModel, ILogger<ContentService> logger, 
+            IContentRepository contentRepository, IJObjectConverter jObjectConverter)
         {
             this.context = context;
             this.mappingModel = mappingModel;
             this.logger = logger;
             this.contentRepository = contentRepository;
+            this.jObjectConverter = jObjectConverter;
         }
         public IEnumerable<Content> GetAllConntent()
         {
@@ -47,12 +50,16 @@ namespace Lanfill.BAL
             }
             else
             {
-                results = contentRepository.GetContent(2, 1);
+                results = contentRepository.GetContent(pageSize: 2,pageIndex: 1);
             }
             var result = mappingModel.MapToContentDTO(results.AsQueryable());//convert to enumerable//TODO
             return result;
 
         }
+
+        //filtering by odata query
+        //than map expression to entity expression
+        //use sql provider to get result
         public IQueryable<ContentDto> GetAllContent(ODataQueryOptions<ContentDto> options)
         {
             var filter = options.GetFilter();

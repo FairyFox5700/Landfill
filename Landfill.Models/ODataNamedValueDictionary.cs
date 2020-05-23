@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace Landfill.Models
 {
         //enum
-
+        //як варыант замість Open Types Odata
         [DataContract]
         public class ODataNamedValueDictionary< TValue> : IDictionary<string, TValue> where TValue : class//TKey, where TKey : struct, Enum
         {

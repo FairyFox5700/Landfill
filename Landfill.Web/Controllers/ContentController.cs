@@ -32,6 +32,7 @@ namespace Landfill.Web.Controllers
                 //var queryable = options.Filter;
                 var topQuery = options.Top;
                 var skipQuery = options.Skip;
+                //map to content Container
                 var data = contentService.GetAllContent(topQuery,skipQuery);
                 return Ok(data);
             }

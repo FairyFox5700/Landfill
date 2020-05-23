@@ -25,9 +25,6 @@ namespace Landfill.Models
         public JObject Content { get; set; }
         public IDictionary<string, object> Translations { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public State State { get; set; }
-
         [NotMapped]
         public static Expression<Func<ContentDto, Content>> ConvertToFaqModel
         {
@@ -107,7 +104,7 @@ namespace Landfill.Models
         #endregion
 
 
-        //public Dictionary<Language,TranslationDTO> Translations { get; set; }
+     
     }
 
 

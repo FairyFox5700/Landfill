@@ -27,7 +27,7 @@ namespace Lanfill.BAL.Implementation.Mapping
         public ContentDto MapToContentDTO(Content contentEntity)
         {
             var model = GetContentByIdWithTranslation(contentEntity.Id, contentEntity.ContentType);
-            model.State = contentEntity.State;
+            //model.State = contentEntity.State;
             model.Id = contentEntity.Id;
             return model;
         }
@@ -99,7 +99,7 @@ namespace Lanfill.BAL.Implementation.Mapping
                          select new FaqModel()
                          {
                              ContentId = content.Id,
-                             //State = content.State,
+                             State = content.State,
                              MainTag = faq.Tag
                          })
                         .FirstOrDefault();
@@ -116,8 +116,8 @@ namespace Lanfill.BAL.Implementation.Mapping
                          {
                              ContentId = content.Id,
                              Header = announcement.Header,
-                             ValiUntil = announcement.ValiUntil
-                             // State = content.State,
+                             ValiUntil = announcement.ValiUntil,
+                             State = content.State,
                          })
                         .FirstOrDefault();
             return model;

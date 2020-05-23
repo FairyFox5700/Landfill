@@ -66,7 +66,7 @@ namespace Lanfill.BAL.Implementation.Mapping
             }
             catch (Exception ex)
             {
-                //logger.LogError("JObject not parced properly", ex.Message);
+                logger.LogError("JObject not parced properly", ex.Message);
                 return default(TContent);
             }
 

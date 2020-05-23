@@ -1,8 +1,11 @@
 using Landfill.BAL.Abstract;
 using Landfill.DAL.Implementation.Core;
+using Landfill.DAL.Implementation.Repositories;
 using Landfill.Models;
+using LandFill.DAL.Abstract;
 using Lanfill.BAL;
 using Lanfill.BAL.Implementation.Mapping;
+using Lanfill.BAL.Implementation.Serialization;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Formatter.Serialization;
@@ -15,22 +18,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LandFill.DAL.Abstract;
-using Landfill.DAL.Implementation.Repositories;
-using Lanfill.BAL.Implementation.Serialization;
 using static Landfill.Common.Enums.EnumsContainer;
 using static Landfill.Web.Controllers.ContentController;
-using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Formatter;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
 
 namespace Landfill.Web
 {
@@ -91,9 +84,9 @@ namespace Landfill.Web
                     containerBuilder.AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(IEdmModel), sp => GetEdmModel())
                       .AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(IEnumerable<IODataRoutingConvention>), sp =>
                         ODataRoutingConventions.CreateDefaultWithAttributeRouting("odata", routeBuilder));
-                    containerBuilder.AddService<ODataSerializer, MongoDataSerializer>(Microsoft.OData.ServiceLifetime.Singleton);
+                    containerBuilder.AddService<ODataSerializer, ContentSerializer>(Microsoft.OData.ServiceLifetime.Singleton);
                     containerBuilder.AddService<ODataSerializerProvider, CustomODataSerializerProvider2>(Microsoft.OData.ServiceLifetime.Singleton);
-                //containerBuilder.AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(ODataSerializerProvider), sp => new CustomODataSerializerProvider(sp));
+                    //containerBuilder.AddService(Microsoft.OData.ServiceLifetime.Singleton, typeof(ODataSerializerProvider), sp => new CustomODataSerializerProvider(sp));
                 });
 
             });
@@ -106,140 +99,46 @@ namespace Landfill.Web
         {
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
             builder.EntitySet<ContentDto>("Content").EntityType.HasKey(r => r.Id);
-            builder.EntitySet<TranslationDTO>("Translation").EntityType.HasKey(r => r.Id); 
+            builder.EntitySet<TranslationDTO>("Translation").EntityType.HasKey(r => r.Id);
             return builder.GetEdmModel();
         }
 
         public class CustomODataSerializerProvider2 : DefaultODataSerializerProvider
         {
             private readonly ContentSerializer dataSerializer;
+            private readonly ContentSetSerializer resourceSetSerializator;
 
             public CustomODataSerializerProvider2(
                 IServiceProvider odataServiceProvider)
                 : base(odataServiceProvider)
             {
-                this.dataSerializer= new ContentSerializer(this);
+                this.dataSerializer = new ContentSerializer(this);
+                this.resourceSetSerializator = new ContentSetSerializer(this);
             }
 
             public override ODataEdmTypeSerializer GetEdmTypeSerializer(IEdmTypeReference edmType)
             {
-                if (edmType.FullName()==typeof(JToken).FullName)                                           //FullName() == typeof(ContentDto).FullName
+                //if (edmType.FullName() == typeof(ContentDto).FullName)
+                //{
+                //    return this.resourceSetSerializator;
+                //}
+                if (edmType.FullName() == typeof(JToken).FullName)                                           //FullName() == typeof(ContentDto).FullName
                 {
+                    // return this.dataSerializer;
                     return this.dataSerializer;
                 }
+               
 
                 return base.GetEdmTypeSerializer(edmType);
             }
         }
 
+
        
 
-        public class DataSerSerializator : ODataResourceSetSerializer
-        {
-            public DataSerSerializator(ODataSerializerProvider serializerProvider) : base(serializerProvider)
-            {
-            }
-         
-            public override ODataOperation CreateODataOperation(IEdmOperation operation, ResourceSetContext resourceSetContext, ODataSerializerContext writeContext)
-            {
-                return base.CreateODataOperation(operation, resourceSetContext, writeContext);
-            }
-            public override void WriteObject(object graph, Type type, ODataMessageWriter messageWriter, ODataSerializerContext writeContext)
-            {
-                base.WriteObject(graph, type, messageWriter, writeContext);
-            }
-            public override void WriteObjectInline(object graph, IEdmTypeReference expectedType, ODataWriter writer, ODataSerializerContext writeContext)
-            {
-                base.WriteObjectInline(graph, expectedType, writer, writeContext);
-            }
-            public override ODataValue CreateODataValue(object graph, IEdmTypeReference expectedType, ODataSerializerContext writeContext)
-            {
-                return base.CreateODataValue(graph, expectedType, writeContext);
-            }
-           
-        }
-        public class MongoDataSerializer : ODataResourceSerializer
-        {
-            public MongoDataSerializer(ODataSerializerProvider serializerProvider)
-                : base(serializerProvider)
-            {
-            }
-            public override ODataValue CreateODataValue(object graph, IEdmTypeReference expectedType, ODataSerializerContext writeContext)
-            {
-                return base.CreateODataValue(graph, expectedType, writeContext);
-            }
-            public override ODataFunction CreateODataFunction(IEdmFunction function, ResourceContext resourceContext)
-            {
-                return base.CreateODataFunction(function, resourceContext);
-            }
-            public override void AppendDynamicProperties(ODataResource resource, SelectExpandNode selectExpandNode, ResourceContext resourceContext)
-            {
-                base.AppendDynamicProperties(resource, selectExpandNode, resourceContext);
-            }
-            public override void WriteObject(object graph, Type type, ODataMessageWriter messageWriter, ODataSerializerContext writeContext)
-            {
-                base.WriteObject(graph, type, messageWriter, writeContext);
-            }
-            public override ODataAction CreateODataAction(IEdmAction action, ResourceContext resourceContext)
-            {
-                return base.CreateODataAction(action, resourceContext);
-            }
-            public override ODataProperty CreateStructuralProperty(IEdmStructuralProperty structuralProperty, ResourceContext resourceContext)
-            {
-                return base.CreateStructuralProperty(structuralProperty, resourceContext);
-            }
-            public override void WriteDeltaObjectInline(object graph, IEdmTypeReference expectedType, ODataWriter writer, ODataSerializerContext writeContext)
-            {
-                base.WriteDeltaObjectInline(graph, expectedType, writer, writeContext);
-            }
-            public override ODataNestedResourceInfo CreateNavigationLink(IEdmNavigationProperty navigationProperty, ResourceContext resourceContext)
-            {
-                return base.CreateNavigationLink(navigationProperty, resourceContext);
-            }
-            public override ODataResource CreateResource(SelectExpandNode selectExpandNode, ResourceContext resourceContext)
-            {
-                return base.CreateResource(selectExpandNode, resourceContext);
-            }
-            public override string CreateETag(ResourceContext resourceContext)
-            {
-                return base.CreateETag(resourceContext);
-            }
-            public override SelectExpandNode CreateSelectExpandNode(ResourceContext resourceContext)
-            {
-                return base.CreateSelectExpandNode(resourceContext);
-            }
-            public override void WriteObjectInline(
-                object graph,
-                IEdmTypeReference expectedType,
-                ODataWriter writer,
-                ODataSerializerContext writeContext)
-            {
-                // This cast is safe because the type is checked before using this serializer.
-                var mongoData = (ContentDto)graph;
-                var properties = new List<ODataProperty>();
-
-                writer.WriteStart(new ODataResource
-                {
-                    TypeName = expectedType.FullName(),
-                    Properties = properties,
-                });
-
-                writer.WriteEnd();
-            }
-        }
-
-
-
-
-
-
-
-
-
-
+        
 
     }
-
 }
 
 

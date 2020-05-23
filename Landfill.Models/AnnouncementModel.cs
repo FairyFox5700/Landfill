@@ -12,11 +12,13 @@ namespace Landfill.Models
     public class AnnouncementModel
     {
         public int ContentId { get; set; }
-        //[JsonConverter(typeof(StringEnumConverter))]
-        //public State State { get; set; }
-        //public ContentType ContentType { get; set; }
         public string Header { get; set; }
         public DateTime ValiUntil { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ContentType ContentType { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
 
         public static Expression<Func<AnnouncementModel, Announcement>> ConvertToAnnouncementEntity
         {
